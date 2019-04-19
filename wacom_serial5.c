@@ -41,6 +41,11 @@
 #include <linux/slab.h>
 #include <linux/completion.h>
 
+/* XXX To be removed before (widespread) release. */
+#ifndef SERIO_WACOM_V
+#define SERIO_WACOM_V 0x3e
+#endif
+
 /* TODO copied from the kernel's wacom.h for now */
 #define USB_VENDOR_ID_WACOM	0x056a
 
