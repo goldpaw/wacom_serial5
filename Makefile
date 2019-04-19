@@ -19,4 +19,4 @@ rm:
 	sync
 
 load:
-make rm && make && make ins
+	make rm && make && make ins
