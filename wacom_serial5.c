@@ -41,20 +41,13 @@
 #include <linux/slab.h>
 #include <linux/completion.h>
 
-/* XXX To be removed before (widespread) release. */
-#ifndef SERIO_WACOM_V
-#define SERIO_WACOM_V 0x3e
-#endif
-
-
 /* TODO copied from the kernel's wacom.h for now */
 #define USB_VENDOR_ID_WACOM	0x056a
 
-
 #define DRIVER_AUTHOR	"Roald Frederickx <roald.frederickx@gmail.com>"
-#define DEVICE_NAME	"Wacom protocol 5 serial tablet"
-#define DRIVER_DESC	DEVICE_NAME " driver"
-#define DRIVER_NAME	"wacom_serial5"
+#define DEVICE_NAME		"Wacom protocol 5 serial tablet"
+#define DRIVER_DESC		"Wacom protocol 5 serial tablet driver"
+#define DRIVER_NAME		"wacom_serial5"
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
@@ -79,28 +72,27 @@ MODULE_PARM_DESC(deadband, "Minimum value from offset that will get an action");
 module_param(thumbwheel_offset, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(thumbwheel_offset, "Compensate for thumbwheel that returns to offset value");
 
+#define REQUEST_MODEL_AND_ROM_VERSION			"~#\r"
+#define REQUEST_MAX_COORDINATES					"~C\r"
+#define REQUEST_CONFIGURATION_STRING			"~R\r"
+#define REQUEST_RESET_TO_PROTOCOL_IV			"\r#\r"
 
-#define REQUEST_MODEL_AND_ROM_VERSION	"~#\r"
-#define REQUEST_MAX_COORDINATES		"~C\r"
-#define REQUEST_CONFIGURATION_STRING	"~R\r"
-#define REQUEST_RESET_TO_PROTOCOL_IV	"\r#\r"
+#define COMMAND_START_SENDING_PACKETS			"ST\r"
+#define COMMAND_STOP_SENDING_PACKETS			"SP\r"
+#define COMMAND_SINGLE_MODE_INPUT				"MT0\r"
+#define COMMAND_MULTI_MODE_INPUT				"MT1\r" /* MU1 for protocol4 */
 
-#define COMMAND_START_SENDING_PACKETS		"ST\r"
-#define COMMAND_STOP_SENDING_PACKETS		"SP\r"
-#define COMMAND_SINGLE_MODE_INPUT		"MT0\r"
-#define COMMAND_MULTI_MODE_INPUT		"MT1\r" /* MU1 for protocol4 */
-
-#define COMMAND_ORIGIN_IN_UPPER_LEFT		"OC1\r"
-#define COMMAND_ENABLE_ALL_MACRO_BUTTONS	"~M0\r"
+#define COMMAND_ORIGIN_IN_UPPER_LEFT			"OC1\r"
+#define COMMAND_ENABLE_ALL_MACRO_BUTTONS		"~M0\r"
 #define COMMAND_DISABLE_GROUP_1_MACRO_BUTTONS	"~M1\r"
-#define COMMAND_TRANSMIT_AT_MAX_RATE		"IT0\r"
-#define COMMAND_DISABLE_INCREMENTAL_MODE	"IN0\r"
-#define COMMAND_ENABLE_CONTINUOUS_MODE		"SR\r"
-#define COMMAND_ENABLE_PRESSURE_MODE		"PH1\r"
-#define COMMAND_Z_FILTER			"ZF1\r"
+#define COMMAND_TRANSMIT_AT_MAX_RATE			"IT0\r"
+#define COMMAND_DISABLE_INCREMENTAL_MODE		"IN0\r"
+#define COMMAND_ENABLE_CONTINUOUS_MODE			"SR\r"
+#define COMMAND_ENABLE_PRESSURE_MODE			"PH1\r"
+#define COMMAND_Z_FILTER						"ZF1\r"
 
-#define COMMAND_HEIGHT				"HT1\r"
-#define COMMAND_ID				"ID1\r"
+#define COMMAND_HEIGHT							"HT1\r"
+#define COMMAND_ID								"ID1\r"
 
 #define PACKET_LENGTH 9
 
@@ -113,7 +105,7 @@ MODULE_PARM_DESC(thumbwheel_offset, "Compensate for thumbwheel that returns to o
 #if 0
 /* device IDs from wacom_wac.h */
 //TODO: properly include this header!
-#define STYLUS_DEVICE_ID	0x02
+#define STYLUS_DEVICE_ID		0x02
 #define TOUCH_DEVICE_ID         0x03
 #define CURSOR_DEVICE_ID        0x06
 #define ERASER_DEVICE_ID        0x0A
@@ -144,7 +136,7 @@ struct wacom {
 enum {
 	MODEL_INTUOS		= 0x4744, /* GD */
 	MODEL_INTUOS2		= 0x5844, /* XD */
-	MODEL_UNKNOWN           = 0
+	MODEL_UNKNOWN		= 0
 };
 
 static void handle_model_response(struct wacom *wacom)
@@ -169,10 +161,10 @@ static void handle_model_response(struct wacom *wacom)
 		wacom->dev->id.version = MODEL_INTUOS2;
 		break;
 	default:
-		dev_dbg(&wacom->dev->dev, "Didn't understand Wacom model "
-				"string: \"%s\". Maybe you want the "
-				"protocol IV driver instead of this one?\n",
-				wacom->data);
+		dev_dbg(&wacom->dev->dev, 	"Didn't understand Wacom model "
+									"string: \"%s\". Maybe you want the "
+									"protocol IV driver instead of this one?\n",
+								wacom->data);
 		p = "Unknown Protocol V";
 		wacom->dev->id.version = MODEL_UNKNOWN;
 		break;
@@ -189,7 +181,6 @@ static void handle_model_response(struct wacom *wacom)
 					0, 2 * TILT_BITS + 1, 0, 0);
 					//-(TILT_BITS + 1), TILT_BITS, 0, 0);
 }
-
 
 static void handle_configuration_response(struct wacom *wacom)
 {
@@ -417,7 +408,6 @@ static int handle_proximity_bit(struct input_dev *dev,
 
 	return proximity;
 }
-
 
 static void handle_general_stylus_packet(struct input_dev *dev,
 					char *data, struct tool_state *state)
@@ -759,25 +749,25 @@ static int wacom_connect(struct serio *serio, struct serio_driver *drv)
 	/* For airbrush */
 	input_set_abs_params(wacom->dev, ABS_WHEEL, 0, 1023, 0, 0);
 
-	__set_bit(BTN_LEFT,		input_dev->keybit);
-	__set_bit(BTN_MIDDLE,		input_dev->keybit);
-	__set_bit(BTN_RIGHT,		input_dev->keybit);
-	__set_bit(BTN_SIDE,		input_dev->keybit);
-	__set_bit(BTN_EXTRA,		input_dev->keybit);
-	__set_bit(BTN_FORWARD,		input_dev->keybit);
-	__set_bit(BTN_BACK,		input_dev->keybit);
-	__set_bit(BTN_TASK,		input_dev->keybit);
-	__set_bit(BTN_STYLUS,		input_dev->keybit);
-	__set_bit(BTN_STYLUS2,		input_dev->keybit);
+	__set_bit(BTN_LEFT,				input_dev->keybit);
+	__set_bit(BTN_MIDDLE,			input_dev->keybit);
+	__set_bit(BTN_RIGHT,			input_dev->keybit);
+	__set_bit(BTN_SIDE,				input_dev->keybit);
+	__set_bit(BTN_EXTRA,			input_dev->keybit);
+	__set_bit(BTN_FORWARD,			input_dev->keybit);
+	__set_bit(BTN_BACK,				input_dev->keybit);
+	__set_bit(BTN_TASK,				input_dev->keybit);
+	__set_bit(BTN_STYLUS,			input_dev->keybit);
+	__set_bit(BTN_STYLUS2,			input_dev->keybit);
 	__set_bit(BTN_TOOL_AIRBRUSH,	input_dev->keybit);
-	__set_bit(BTN_TOOL_BRUSH,	input_dev->keybit);
-	__set_bit(BTN_TOOL_LENS,	input_dev->keybit);
-	__set_bit(BTN_TOOL_MOUSE,	input_dev->keybit);
-	__set_bit(BTN_TOOL_PEN,		input_dev->keybit);
-	__set_bit(BTN_TOOL_PENCIL,	input_dev->keybit);
-	__set_bit(BTN_TOOL_RUBBER,	input_dev->keybit);
+	__set_bit(BTN_TOOL_BRUSH,		input_dev->keybit);
+	__set_bit(BTN_TOOL_LENS,		input_dev->keybit);
+	__set_bit(BTN_TOOL_MOUSE,		input_dev->keybit);
+	__set_bit(BTN_TOOL_PEN,			input_dev->keybit);
+	__set_bit(BTN_TOOL_PENCIL,		input_dev->keybit);
+	__set_bit(BTN_TOOL_RUBBER,		input_dev->keybit);
 
-	__set_bit(ABS_MISC,		input_dev->absbit);
+	__set_bit(ABS_MISC,				input_dev->absbit);
 
 	serio_set_drvdata(serio, wacom);
 
@@ -806,7 +796,7 @@ static struct serio_device_id wacom_serio_ids[] = {
 	{
 		.type	= SERIO_RS232,
 		.proto	= SERIO_WACOM_V,
-		.id	= SERIO_ANY,
+		.id		= SERIO_ANY,
 		.extra	= SERIO_ANY,
 	},
 	{ 0 }
@@ -819,10 +809,10 @@ static struct serio_driver wacom_drv = {
 		.name 	= DRIVER_NAME,
 	},
 	.description	= DRIVER_DESC,
-	.id_table	= wacom_serio_ids,
-	.interrupt	= wacom_interrupt,
-	.connect	= wacom_connect,
-	.disconnect	= wacom_disconnect,
+	.id_table		= wacom_serio_ids,
+	.interrupt		= wacom_interrupt,
+	.connect		= wacom_connect,
+	.disconnect		= wacom_disconnect,
 };
 
 static int __init wacom_init(void)
